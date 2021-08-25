@@ -58,7 +58,7 @@ eventSequenceArray(:,4)=eventSequence(:,3);
 
 % calculateStream(eventSequenceArray,pulseLibraryArray,indexLibraryArray,maxLengthPulse,TimeWindow,lengthPulseLibraryIndex,clockSignal,fidData);
 
-numberOfWindow=eventSequenceArray(end,1) %iloœæ okien
+numberOfWindow=eventSequenceArray(end,1); %number of windows
 previousPartEventSequenceArray=[];
 previousPartPulseLibraryArray=[];
 previousPartIndexLibraryArray=[];
