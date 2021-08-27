@@ -4,6 +4,7 @@ Code to Create Stimulation Files to Run on 512 Multielectrode Array
 REQUIREMENTS
 MATLAB with following Toolbox:
 Communications Toolbox
+Fixed Point Designer
 
 'main.m' is starting point. Choose which stim pattern file you want to use and define pathname/filename for the stim files the code will generate.
 
