@@ -1,5 +1,5 @@
 %{
-[PL, PLI, ES] = P_SeqCh_FixAmp_FixFreq(saveLocation, nameFileLib, varargin)
+[PL, PLI, ES] = P_SeqCh_FixAmp_FixFreq(filepath, varargin)
 
 Beggs Lab
 Danny Havert
@@ -35,7 +35,7 @@ This means a value of 20 time bins is equivalent to 1ms
 
 The computer talks to the electrode array in intervals of 250ms.
 %}
-function [PL, PLI, ES] = P_SeqCh_FixAmp_FixFreq(saveLocation, nameFileLib, varargin)
+function [PL, PLI, ES] = P_SeqCh_FixAmp_FixFreq(filepath, varargin)
 %% FILL IN THESE VALUES
 
 %-------User Defined Variables-------%
@@ -74,7 +74,7 @@ FirstPulseDelay = 100; % Delay before the first pulse
             
 if (nargin > 2 && varargin{1} == 'Test')
   RecOffOnStim = 0;
-  nameFileLib = [nameFileLib,'_TEST'];
+  filepath = [filepath,'_TEST'];
 else
   RecOffOnStim = 1;
 end         % Determine whether channel being stimulated will record
@@ -165,11 +165,11 @@ for ii=1:size(PL,1)
 end
              
 % Save both files
-fid = fopen([saveLocation nameFileLib '.slf'], 'w', 'l');
+fid = fopen([filepath '.slf'], 'w', 'l');
 fwrite(fid, PL_dec, 'int16');
 fclose(fid);
 
-fid = fopen([saveLocation nameFileLib '.sif'], 'w', 'l');
+fid = fopen([filepath '.sif'], 'w', 'l');
 fwrite(fid, PLI, 'int32');
 fclose(fid);
 
@@ -208,6 +208,6 @@ end
 ES = ES(SortByTimeOrder,:);
 
 % Save File
-fid = fopen([saveLocation nameFileLib '.sef'], 'w', 'l');
+fid = fopen([filepath '.sef'], 'w', 'l');
 fwrite(fid, ES, 'int32');
 fclose(fid);

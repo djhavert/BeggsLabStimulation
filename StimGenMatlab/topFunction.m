@@ -3,7 +3,7 @@ function eventSequenceArray=topFunction(TimeWindow,libraryPathname,dataStreaming
 % setOptionClkSiganl(saveLocationClkSignal,distance_MUX_ADC);
 % clockSignalFile='\clockSignal';
 % clockSignal=clkSignal(saveLocationClkSignal,clockSignalFile);
-saveLocationClkSignal='clockSignal\';
+saveLocationClkSignal='clockSignal';
 clockSignalFile='clk';
 clockSignal=clkSignal(saveLocationClkSignal,clockSignalFile);
 ii = 1;

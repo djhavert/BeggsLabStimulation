@@ -11,11 +11,12 @@
 
 %% CREATE STIM PATTERN FILES
 % Define path and file names for the generated stim files
-PathName = [pwd,'\streaming_classes\'];
-FileName='devTesting\Test';
-%FileName='12-16-20\TTX_Pairs_Slice4';
-if ~exist(fileparts([PathName,FileName]), 'dir')
-  mkdir(fileparts([PathName,FileName]))
+PathName = fullfile(pwd,'StimStreamingFiles');
+FileName = fullfile('devTesting','Test');
+filepath = fullfile(PathName,FileName);
+%FileName = fullfile('12-16-20','TTX_Pairs_Slice4');
+if ~exist(fileparts(filepath), 'dir')
+  mkdir(fileparts(filepath))
 end
 
 
@@ -24,13 +25,13 @@ end
 % The PATTERN function will also create and save the .slf, .sif, and .sef
 % files
 
-%[PL, PLI, ES]=P_SeqCh_FixAmp_FixFreq(PathName, FileName);
-%[PL, PLI, ES]=P_SeqCh_MultiAmp_FixFreq(PathName, FileName);
-%[PL, PLI, ES]=P_MultiSeqCh_FixAmp_FixFreq(PathName, FileName);
-%[PL, PLI, ES]=P_GroupsSeqCh_FixAmp_FixFreq(PathName, FileName);
-%[PL, PLI, ES]=P_RandCh_FixAmp_RandFreq(PathName, FileName);
-%[PL, PLI, ES]=P_Tetanization(PathName, FileName);
-[PL, PLI, ES]=P_TTX_Subtraction(PathName, FileName);
+%[PL, PLI, ES]=P_SeqCh_FixAmp_FixFreq(filepath);
+%[PL, PLI, ES]=P_SeqCh_MultiAmp_FixFreq(filepath);
+%[PL, PLI, ES]=P_MultiSeqCh_FixAmp_FixFreq(filepath);
+%[PL, PLI, ES]=P_GroupsSeqCh_FixAmp_FixFreq(filepath);
+%[PL, PLI, ES]=P_RandCh_FixAmp_RandFreq(filepath);
+%[PL, PLI, ES]=P_Tetanization(filepath);
+%[PL, PLI, ES]=P_TTX_Subtraction(filepath);
 
 
 % Display some useful information from the generate stim file.
@@ -39,6 +40,7 @@ disp(['Stimulation Duration = ',num2str(ES(end,1)/20000),' seconds']);
 %% CREATE STIM BINARY FILE
 % The rest of this code will generate the binary file from the three
 % stimulation pattern files created above.
+PathName = fullfile(PathName,filesep);
 libraryPathname=struct('pulseLibraryPathname',PathName,'pulseLibraryIndexPathname', PathName,'eventLibraryFileNamePathname',PathName);
 libraryFileName=struct('pulseLibraryfName',[FileName '.slf'],'pulseLibraryIndexVectorfName',[FileName '.sif'],'eventLibraryFileName',[FileName '.sef']);
 
