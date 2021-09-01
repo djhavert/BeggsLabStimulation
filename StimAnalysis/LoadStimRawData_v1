@@ -1,0 +1,92 @@
+%% GET STIMULATION PARAMETERS
+
+% Load Stimulation Pattern
+stimfiledir = '/home/ADS_djhavert/Documents/IU/BeggsLab/Research/StimData/3-18/';
+stimfiledir = [pwd,'/Poisson1HzAllChs1hr/']; %Current directory
+stimfilename =  '8-5-20_Poisson1HzAllChs1hr';
+PL = readAndConvertPulseLibrary(stimfiledir,[stimfilename,'.slf']);
+PLI = readAndConvertPulseLibraryIndex(stimfiledir,[stimfilename,'.sif']);
+ES = readAndConvertEventSequence(stimfiledir,[stimfilename,'.sef']);
+ESreal = ES(find(ES(:,2)>0),:); 
+clear ES;
+
+% Find time between stimulations
+%period = ESreal(2,1)-ESreal(1,1);
+
+% Find channels that were stimulated and in what order.
+[stimCh, stimChOrder] = getStimChannels(ESreal);
+ES_indices = getStimChannels(ESreal);
+
+%% DATA
+% Load Vision
+LoadVision2;
+
+% Load raw data
+datadir = [pwd, '/TtxAllChs/data001/'];
+datadir_ttx = [pwd, '/TtxAllChs/data001/'];
+%datadir = '/media/djhavert/Seagate Backup Plus Drive/New lab data/3-18-20/Slice2/AfterStim1/data000/';
+datastruct = LoadVisionFiles(datadir);
+datastruct_ttx = LoadVisionFiles(datadir_ttx);
+
+
+% Find offset - NOT IMPLEMENTED: for now just do by hand.
+% When you stimulate, the system takes between about 1s to actually begin
+% the stimulation protocol. This accounts for that offset
+offset = 20000;
+ESreal(:,1) = ESreal(:,1)+offset;
+
+%% Load Spike File
+spkFile = LoadVisionFiles([datadir,'*.spikes']);
+spktimes = spkFile.getSpikeTimes();
+spktimes = spktimes(2:end);
+
+%% SIMPLE SPIKE CLEANING
+% Get rid of any spikes that occur during a window (Tartifact) after each
+% stimulation pulse
+%{
+Tstep = 40;
+Tartifact = [offset; ESreal(:,1)];
+for ii = 1:512
+  oldSpkTimes = double(spktimes{ii});
+  spktimes{ii} = oldSpkTimes(not(isInRange(oldSpkTimes, Tartifact, Tartifact+Tstep)));
+end
+clear oldSpkTimes Tartifact
+
+Nspikes = cellfun(@(x) length(x), spktimes);
+HighSpkCh = find(Nspikes>(mean(Nspikes)+5*std(Nspikes)));
+%}
+%% Create PSTH
+hf = cell(length(HighSpkCh),1);
+for ii=1:length(HighSpkCh)
+  ch = HighSpkCh(ii);
+  hf{ii} = createPSTH(spktimes{ch},ESreal,ch,'NumBins', 100, 'Period', period);
+end
+
+%% Get Post Stim Raw Data
+
+PS_raw = cell(512,1);
+for ii=1:1 %length(stimCh)
+  ch = stimCh(ii);
+  ch = 140;
+  PS_raw{ch} = getPostStimRawSignal(datastruct, datastruct_ttx, ESreal, ch, period);
+end
+%}
+
+%% Eliminate Artifacts - INCOMPLETE 
+%{
+temp =double(PS_raw{ch}(1:100,(ESreal(:,2)==292)));
+temp2 = temp - mean(temp,2);
+plot(temp2);
+%}
+
+%% Plot Post Stim Data
+T = period/20; %Time to plot from beginning in ms
+for ii = 1:length(HighSpkCh)
+  ch = HighSpkCh(ii);
+  figure(hf{ii}.Number);
+  x=(0.05:0.05:T)';
+  subplot(2,2,3); 
+  plot(x,PS_raw{ch}(1:20*T,(ESreal(:,2)==stimCh(1))));
+  subplot(2,2,4); 
+  plot(x,PS_raw{ch}(1:20*T,(ESreal(:,2)==stimCh(2))));
+end
