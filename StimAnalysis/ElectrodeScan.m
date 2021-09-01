@@ -1,8 +1,10 @@
-% Brief Analysis of Scan for Influencable Electrodes
+% Brief Analysis of Stimulated Electrodes to find most effective stim sites
+% and most responsive channels to each stim site.
 % 
-% Input:
-% 'dir' - directory where 'data000' folder and stim files are located
-%
+% Change your Matalb 'Current Folder' to be the folder where stim files and
+% 'data00X' folder is.
+% If data folder is not 'data000' then change line 
+
 
 tic
 
@@ -42,12 +44,12 @@ for pat = 1:num_pats
   
   % Sort by number
   [S,I] = sort(short_count(pat,:),'descend');
-  response(pat).short_max = [S(1),I(1)];
+  response(pat).short_max = [S(1)];
   response(pat).short_avg = mean(S);
   response(pat).short(:,1) = I';
   response(pat).short(:,2) = S';
   [S,I] = sort(long_count(pat,:),'descend');
-  response(pat).long_max = [S(1),I(1)];
+  response(pat).long_max = [S(1)];
   response(pat).long_avg = mean(S);
   response(pat).long(:,1) = I';
   response(pat).long(:,2) = S';
