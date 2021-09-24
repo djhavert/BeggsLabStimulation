@@ -36,6 +36,9 @@ for pat = 1:num_pats
   stim_times = pat_t{pat,2};
   % for each channel...
   for ch = 1:512
+      if isempty(spike_times{ch})
+          continue
+      end
   % Count spikes before short_range value
   short_count(pat,ch) = sum(isInRange(spike_times{ch}',stim_times,stim_times+short_range))./length(stim_times);
   % Count spikes between short_range and long_range values

@@ -32,7 +32,7 @@ This means a value of 20 time bins is equivalent to 1ms
 
 The computer talks to the electrode array in intervals of 250ms.
 %}
-function [PL, PLI, ES] = P_Tetanization_IndCh(saveLocation, nameFileLib, varargin)
+function [PL, PLI, ES] = P_Tetanization_IndCh(filepath, varargin)
 %% FILL IN THESE VALUES
 
 %-------User Defined Variables-------%
@@ -177,11 +177,11 @@ for ii=1:size(PL,1)
 end
              
 % Save both files
-fid = fopen([saveLocation nameFileLib '.slf'], 'w', 'l');
+fid = fopen([filepath '.slf'], 'w', 'l');
 fwrite(fid, PL_dec, 'int16');
 fclose(fid);
 
-fid = fopen([saveLocation nameFileLib '.sif'], 'w', 'l');
+fid = fopen([filepath '.sif'], 'w', 'l');
 fwrite(fid, PLI, 'int32');
 fclose(fid);
 
@@ -220,6 +220,6 @@ end
 ES = ES(SortByTimeOrder,:);
 
 % Save File
-fid = fopen([saveLocation nameFileLib '.sef'], 'w', 'l');
+fid = fopen([filepath '.sef'], 'w', 'l');
 fwrite(fid, ES, 'int32');
 fclose(fid);
