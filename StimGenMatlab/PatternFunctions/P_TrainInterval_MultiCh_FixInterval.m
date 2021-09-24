@@ -48,7 +48,7 @@ function [PL, PLI, ES] = P_TrainInterval_MultiCh_FixInterval(filepath, varargin)
 %% FILL IN THESE VALUES
 
 %-------User Defined Variables-------%
-Channels = [496 405]; % [A,B,...]
+Channels = [117,166]; % [A,B,...]
           % The channels will be stimulated independently, and then
           % together with a fixed interval between them.
 

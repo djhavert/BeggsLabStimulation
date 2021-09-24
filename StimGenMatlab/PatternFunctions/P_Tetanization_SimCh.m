@@ -35,7 +35,7 @@ function [PL, PLI, ES] = P_Tetanization_SimCh(filepath, varargin)
 %% FILL IN THESE VALUES
 
 %-------User Defined Variables-------%
-Channels = [496,405];
+Channels = [117,166];
           % Each channel will be stimulated [RepsPerCh] times for [Trains]
           % number of trains. It will repeat that pattern for the next
           % channel.
