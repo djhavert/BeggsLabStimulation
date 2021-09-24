@@ -41,12 +41,12 @@ function [PL, PLI, ES] = P_TTX_Subtraction(filepath, varargin)
 %-------User Defined Variables-------%
 %Channels = 1:512;
 %Channels = [1:24, 373:512];
-Channels{1,1} = []';
+Channels{1,1} = [405, 408, 461, 446, 222, 479, 496, 500, 510, 503, 414, 430, 35, 472]';
           % Each channel will be stimulated RepsPerCh number of times
           % before moving on to the next channel given.
-Channels{2,1} = [];
-Channels{3,1} = [1,2,3];
-Channels{4,1} = [11,12,13,14];
+Channels{2,1} = [405 496];
+%Channels{3,1} = [];
+%Channels{4,1} = [];
 %Channels{5,1} = [];
 %Channels{6,1} = [];
 %......

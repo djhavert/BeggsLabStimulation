@@ -39,7 +39,7 @@ function [PL, PLI, ES] = P_SeqCh_FixAmp_FixFreq(filepath, varargin)
 %% FILL IN THESE VALUES
 
 %-------User Defined Variables-------%
-Channels = [283,335,291,284,320,156,307,297,331,93,310];
+Channels = [54, 117, 197, 217, 260, 398, 175, 161, 324, 166, 206, 198, 363, 461, 431, 262, 438, 221];
           % Each channel will be stimulated sequentailly (in the order 
           % given) with the same time between each stimulation.
 

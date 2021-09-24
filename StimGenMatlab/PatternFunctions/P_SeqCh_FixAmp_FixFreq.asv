@@ -1,27 +1,18 @@
 %{
-[PL, PLI, ES] = P_SeqCh_FixAmp_FixFreq(saveLocation, nameFileLib, varargin)
+[PL, PLI, ES] = P_SeqCh_FixAmp_FixFreq(filepath, varargin)
 
 Beggs Lab
-Katy Hagen
-August 2021
+Danny Havert
+May 2020
 
 A P file (PATTERN file) produces the three necessary stimulatiion files for
 a specific stimulation pattern.
 
 This PATTERN file creates a stimulation with the following characteristics:
-- TrainInterval - The two channels will each fire a fixed number of times
-to test network output prior to and following training. (eg. A A A A ... B
-B B B ...) During training, channel A will fire, and then channel B will
-fire after some delay (eg. A>B A>B ...). Any subsequent files will fire
-after the delay. The number of times the testing and training files
-are presented need not be the same. The total file, therefore, will consist
-of:
-     (eg. A A A ... B B B ... A>B A>B A>B ... A A A ... B B B).
-- MultiCh (Multiple Channels) - Any number of channels (A,B,...) may be
-used, with a minimum of two.
-- FixInterval (Fixed Training Interval) - The training interval between
-each electrode is constant.
-    (eg. A > (interval) > B > (interval) > C > ...)
+- SeqCh (Sequential Channel) - The order in which the channels are
+stimulated is sequential and cyclical. As an example, if three channels are 
+given (1, 2, 3), then the order in which the channels are stimulated is 
+(1 2 3 1 2 3 1 2 3 ...) until the pattern ends
 - FixAmp (Fixed Amplitude) - The stimulation amplitude is fixed and does
 not change throughout the pattern.
 - FixFreq (Fixed Frequency) - The stimulation frequency is fixed and does
@@ -44,13 +35,13 @@ This means a value of 20 time bins is equivalent to 1ms
 
 The computer talks to the electrode array in intervals of 250ms.
 %}
-function [PL, PLI, ES] = P_TrainInterval_MultiCh_FixInterval(filepath, varargin)
+function [PL, PLI, ES] = P_SeqCh_FixAmp_FixFreq(filepath, varargin)
 %% FILL IN THESE VALUES
 
 %-------User Defined Variables-------%
-Channels = [496 405]; % [A,B,...]
-          % The channels will be stimulated independently, and then
-          % together with a fixed interval between them.
+Channels = [54, 117, 197, 217, 260, 398, 175, 161, 324, ];
+          % Each channel will be stimulated sequentailly (in the order 
+          % given) with the same time between each stimulation.
 
 CurrentRange = -4; % see readme for how values here correspond to Amps.
                    % Common Values:
@@ -61,20 +52,14 @@ AmplitudesDAC = 20; % MAX 42. The actual current amplitude of the largest
                     % peak in the pulse is (3*x/128)*CurrentRangeInAmps
 
 InterPulseDelay = 20 * 1000 * 4; % Time between stimulation of one channel 
-                             % or pair and the next.
-                             % This is NOT the interval between A and B
-                             % during training.
+                             % and the next.
                              % Note: All times are given in number of
                              % samples. Since the sample rate is 20000 HZ,
                              % one time unit here is equivalent to 50 us.
-                             
-TrainingInterval = 20 * 20; %Interval between A, B, ... during training.
 
-RepsPerCh_test = 100; % How many times the the stim pulse will be repeated
-                 % on each channel during testing. (A A A ... B B B ...)
-                 
-RepsPerCh_train = 100; % How many times the stim pulse will be repeated on
-                 % two channels during training. (A>B A>B A>B ...)
+RepsPerCh = 10; % How many times the the stim pulse will be repeated on 
+                 % each channel.
+
                  
                  
                  
@@ -87,12 +72,12 @@ CommandPulseDelay = 5; % Delay before commands (i.e. setting current range)
 FirstPulseDelay = 100; % Delay before the first pulse
 
             
-%if (nargin > 2 && strcmp(varargin{1}, 'Test'))
-%  RecOffOnStim = 0;
-%  nameFileLib = [nameFileLib,'_TEST'];
-%else
+if (nargin > 2 && varargin{1} == 'Test')
   RecOffOnStim = 0;
-%end         % Determine whether channel being stimulated will record
+  filepath = [filepath,'_TEST'];
+else
+  RecOffOnStim = 1;
+end         % Determine whether channel being stimulated will record
             % data during the length of the pulse.
             % 1 for recording=OFF(use if liquid will be in chamber)
             % 0 for recording=ON (use if chamber will be dry, for testing)
@@ -110,27 +95,9 @@ Duration = 2; % Duration of each phase. In general duration of each phase
 
 %-------Dependent Variables-------%
 % Find times of all the pulses.
-NumPulses_test = length(Channels) * RepsPerCh_test; %testing pulses (this number happens before and after training)
-NumPulses_train = length(Channels) * RepsPerCh_train; %total training pulses
-NumPulses = 2*NumPulses_test + NumPulses_train; %total pulses
-Time = FirstPulseDelay; %initialize
-PulseTimes = zeros(1,NumPulses); %initialize
-for i=1:NumPulses_test %first round of testing
-    PulseTimes(i) = Time;
-    Time = Time + InterPulseDelay;
-end
-for i=1:RepsPerCh_train %training
-    for j=1:length(Channels)
-        PulseTimes(length(Channels)*(i-1)+j+NumPulses_test) = Time;
-        Time = Time + TrainingInterval;
-    end
-     Time = Time - TrainingInterval*length(Channels) + InterPulseDelay;
-end
-for i=1:NumPulses_test %second round of testing
-    PulseTimes(i+NumPulses_test+NumPulses_train) = Time;
-    Time = Time + InterPulseDelay;
-end
-TotalDuration = Time - InterPulseDelay;
+NumPulses = length(Channels) * RepsPerCh;
+TotalDuration = (NumPulses-1) * InterPulseDelay;
+PulseTimes = FirstPulseDelay + (0:InterPulseDelay:TotalDuration);
 
 % Find Bins with no pulses given. We need to fill those empty bins with
 % zero amplitude pulses to prevent the stim software from giving a real
@@ -220,29 +187,13 @@ ES(1,:)=[CommandPulseDelay 0 CurrentRange];
 
 % Create Event Sequence
 PulseCount = 1;
-for jj = 1:length(Channels)
-    for ii = 1:RepsPerCh_test
-        PulseCount = PulseCount + 1;
-        ES(PulseCount, 1) = PulseTimes(PulseCount-1);
-        ES(PulseCount, 2) = RecOffOnOthers * Channels(jj);
-        ES(PulseCount, 3) = 1; % real pulse
-    end
-end
-for ii = 1:RepsPerCh_train
-    for jj = 1:length(Channels)
-        PulseCount = PulseCount + 1;
-        ES(PulseCount, 1) = PulseTimes(PulseCount-1);
-        ES(PulseCount, 2) = RecOffOnOthers * Channels(jj);
-        ES(PulseCount, 3) = 1; % real pulse
-    end
-end
-for jj = 1:length(Channels)
-    for ii = 1:RepsPerCh_test
-        PulseCount = PulseCount + 1;
-        ES(PulseCount, 1) = PulseTimes(PulseCount-1);
-        ES(PulseCount, 2) = RecOffOnOthers * Channels(jj);
-        ES(PulseCount, 3) = 1; % real pulse
-    end
+for ii = 1:RepsPerCh
+  for jj = 1:length(Channels)
+    PulseCount = PulseCount + 1;
+    ES(PulseCount, 1) = PulseTimes(PulseCount-1);
+    ES(PulseCount, 2) = RecOffOnOthers * Channels(jj); 
+    ES(PulseCount, 3) = 1; % real pulse
+  end
 end
 
 for ii = 1:length(ZeroAmpPulseTimes)

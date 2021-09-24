@@ -48,7 +48,7 @@ function [PL, PLI, ES] = P_TrainInterval_MultiCh_FixInterval(filepath, varargin)
 %% FILL IN THESE VALUES
 
 %-------User Defined Variables-------%
-Channels = [496 405]; % [A,B,...]
+Channels = [119 76]; % [A,B,...]
           % The channels will be stimulated independently, and then
           % together with a fixed interval between them.
 
@@ -257,6 +257,6 @@ end
 ES = ES(SortByTimeOrder,:);
 
 % Save File
-fid = fopen([filepath '.sef'], 'w', 'l');
+fid = fopen([filepath '.slf'], 'w', 'l');
 fwrite(fid, ES, 'int32');
 fclose(fid);
