@@ -28,8 +28,8 @@ for ii = 1:length(stim2ttx)
   end
 end
 %%
-pat_stim=1;
-ch_read=120;
+pat_stim=2;
+ch_read=166;
 
 
 x=0:0.05:(TraceRange-1)*0.05;

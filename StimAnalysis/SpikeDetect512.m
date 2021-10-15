@@ -55,7 +55,7 @@ threshold = transpose(avg - threshold_alpha * sigma);
 clear data avg
 
 %% Spike Finding
-spike_times = cell(512,1);
+spike_times = cell(513,1);
 % For each file
 for ff = 1:num_files
   % READ ------------------------------------------------------------------
@@ -80,8 +80,8 @@ for ff = 1:num_files
     % Spike times will be in units of 50 us each (i.e. 1 ms = 20)
   end
   
-  
-  
 end
 data_obj.close();
 clear data data_obj
+
+spike_times{513} = num_samples;

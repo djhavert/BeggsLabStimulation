@@ -203,13 +203,6 @@ for ii=1:1 %length(stimCh)
 end
 %}
 
-%% Eliminate Artifacts - INCOMPLETE 
-%{
-temp =double(PS_raw{ch}(1:100,(ESreal(:,2)==292)));
-temp2 = temp - mean(temp,2);
-plot(temp2);
-%}
-
 %% Plot Post Stim Data
 T = period/20; %Time to plot from beginning in ms
 for ii = 1:length(HighSpkCh)

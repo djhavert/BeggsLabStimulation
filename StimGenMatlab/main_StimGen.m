@@ -11,8 +11,13 @@
 
 %% CREATE STIM PATTERN FILES
 % Define path and file names for the generated stim files
+<<<<<<< Updated upstream
 PathName = fullfile(pwd,'Binary Stim Files');
 FileName = fullfile('9-24-2021','Slice1_TrainInterval_20msInterval_117_166');
+=======
+PathName = fullfile(pwd,'StimStreamingFiles');
+FileName = fullfile('Slice4','Test');
+>>>>>>> Stashed changes
 filepath = fullfile(PathName,FileName);
 %FileName = fullfile('12-16-20','TTX_Pairs_Slice4');
 if ~exist(fileparts(filepath), 'dir')
@@ -32,8 +37,11 @@ end
 %[PL, PLI, ES]=P_RandCh_FixAmp_RandFreq(filepath);
 %[PL, PLI, ES]=P_Tetanization(filepath);
 [PL, PLI, ES]=P_TrainInterval_MultiCh_FixInterval(filepath);
+<<<<<<< Updated upstream
 % [PL, PLI, ES]=P_Tetanization_SimCh(filepath);
 
+=======
+>>>>>>> Stashed changes
 %[PL, PLI, ES]=P_TTX_Subtraction(filepath);
 
 
