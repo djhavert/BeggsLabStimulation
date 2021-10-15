@@ -5,48 +5,23 @@
 % 2 GB should theoretically work, but I only tested on 4 GB.
 
 % VALUES SET BY USER ------------------------------------------------------
-orig_dir = [pwd, '/06_Stim_StaticPairWith30msDelay/'];
+orig_dir = [pwd, '/04_TrainInterval/'];
 orig_data_dir = [orig_dir, 'data000/'];
 stim_file_dir = orig_dir;
 
-ttx_dir = [pwd, '/TTX/'];
+ttx_dir = [pwd, '/06_TTX/'];
 ttx_stimfile_dir = ttx_dir;
 ttx_datafile_dir = [ttx_dir,'data000/'];
 
-new_data_dir = [pwd, '/06_Stim_StaticPairWith30msDelay_PostTTX/data000/'];
-
-
+new_data_dir = [pwd, '/04_TrainInterval_PostTTX/data000/'];
 
 
 % CONSTANTS ---------------------------------------------------------------
 MaxSamplesPerFile = 20000*60*2; %2 min
-TraceRange = 20*20; % 10 ms
+TraceRange = 20*20; % 20 ms
 
-% CREATE JAVA OBJECTS TO ACCESS VISION READ AND WRITE FUNCTIONS -----------
-% ORIGINAL DATA OBJECT
-% Open original data file for reading
+% Load Vision
 LoadVision2;
-
-orig_data_obj = LoadVisionFiles(orig_data_dir);
-% Extract some useful info
-orig_header = orig_data_obj.getHeader();
-num_samples = orig_header.getNumberOfSamples();
-num_files = ceil(num_samples/MaxSamplesPerFile);
-% Initialize
-orig_data = zeros(MaxSamplesPerFile, 513, 'int16');
-
-%% NEW DATA OBJECT
-% Create and open new file for writing
-if ~exist(new_data_dir, 'dir')
-  mkdir(new_data_dir);
-end
-% Create the first subfile with header
-new_data_obj = edu.ucsc.neurobiology.vision.io.ModifyRawDataFile(new_data_dir, orig_header);
-% Create the rest of the subfiles. Each subfile is 1.8 GB
-for ff = 1:(num_files-1)
-  new_data_obj.addFile();
-end
-
 %% GET STIM_FILE PROPERTIES ------------------------------------------------
 stim_file_struct = LoadStimFile(stim_file_dir);
 ESreal = stim_file_struct.ES(stim_file_struct.ES(:,2)>0,:);
@@ -65,6 +40,29 @@ for ii = 1:length(stim2ttx)
       stim2ttx(ii) = jj;
     end
   end
+end
+
+%% CREATE JAVA OBJECTS TO ACCESS VISION READ AND WRITE FUNCTIONS -----------
+% ORIGINAL DATA OBJECT
+% Open original data file for reading
+orig_data_obj = LoadVisionFiles(orig_data_dir);
+% Extract some useful info
+orig_header = orig_data_obj.getHeader();
+num_samples = orig_header.getNumberOfSamples();
+num_files = ceil(num_samples/MaxSamplesPerFile);
+% Initialize
+orig_data = zeros(MaxSamplesPerFile, 513, 'int16');
+
+% NEW DATA OBJECT
+% Create and open new file for writing
+if ~exist(new_data_dir, 'dir')
+  mkdir(new_data_dir);
+end
+% Create the first subfile with header
+new_data_obj = edu.ucsc.neurobiology.vision.io.ModifyRawDataFile(new_data_dir, orig_header);
+% Create the rest of the subfiles. Each subfile is 1.8 GB
+for ff = 1:(num_files-1)
+  new_data_obj.addFile();
 end
 
 

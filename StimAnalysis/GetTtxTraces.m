@@ -11,6 +11,11 @@ PLI = stim_file_struct.PLI;
 ES = stim_file_struct.ES;
 
 % MANUAL FIX FOR BUG THAT CAUSED EVERYTHING TO SHIFT BY 250 MS
+diffs_by_250 = find(diff(ES)==5000);
+bad_shifts = find(diffs_by_250>20 & diffs_by_250<size(ES,1)-18);
+if ~isempty(bad_shifts)
+  error(['TTX Got Shifted at ',num2str(bad_shifts), '. Needs manual correction.'])
+end
 %ES(921:end,1) = ES(921:end,1) - 5000;
 
 % Find uninterupted zeros
