@@ -5,7 +5,7 @@
 % 2 GB should theoretically work, but I only tested on 4 GB.
 
 % VALUES SET BY USER ------------------------------------------------------
-orig_dir = [pwd, '/04_TrainInterval/'];
+orig_dir = [pwd, '/03_Tetanization/'];
 orig_data_dir = [orig_dir, 'data000/'];
 stim_file_dir = orig_dir;
 
@@ -13,7 +13,7 @@ ttx_dir = [pwd, '/06_TTX/'];
 ttx_stimfile_dir = ttx_dir;
 ttx_datafile_dir = [ttx_dir,'data000/'];
 
-new_data_dir = [pwd, '/04_TrainInterval_PostTTX/data000/'];
+new_data_dir = [orig_dir(1:end-1),'_PostStim/data000/'];
 
 
 % CONSTANTS ---------------------------------------------------------------
