@@ -3,7 +3,8 @@
 
 
 % USER INPUT - directory info
-dir = [pwd, '/02_Stim_ThreePairsAmp10_PostTTX/'];
+%dir = [pwd, '/02_Stim_ThreePairsAmp10_PostTTX/'];
+dir = [pwd];
 data_dir = [dir, 'data000/'];
 stim_file_dir = dir;
 
@@ -29,7 +30,7 @@ ESreal = stim_file_struct.ES(stim_file_struct.ES(:,2)>0,:);
 % Load Vision
 LoadVision2;
 
-% CREATE JAVA OBJECTS TO ACCESS VISION READ AND WRITE FUNCTIONS -----------
+%% CREATE JAVA OBJECTS TO ACCESS VISION READ AND WRITE FUNCTIONS -----------
 % ORIGINAL DATA OBJECT
 % Open original data file for reading
 data_obj = LoadVisionFiles(data_dir);
