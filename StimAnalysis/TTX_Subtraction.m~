@@ -67,12 +67,16 @@ for ff = 1:(num_files-1)
 end
 % Transfer stim files to new directory
 filetypes = ['bin'; 'slf'; 'sif';'sef'];
-for ii = 1:size(filetypes,1)
-  file = fullfile(stim_file_dir,filesep,dir([stim_file_dir,'*.',filetypes(ii,:)]).name);
-  status = copyfile(file,new_dir);
-  if ~status
-    disp('Unable to copy .slf stim file to new directory. Do it manually.');
-  end
+for ii = 1:
+file = fullfile(stim_file_dir,filesep,dir([stim_file_dir,'*.slf']).name);
+status = copyfile(file,new_dir);
+if ~status
+  disp('Unable to copy .slf stim file to new directory. Do it manually.');
+end
+file = fullfile(stim_file_dir,filesep,dir([stim_file_dir,'*.slf']).name);
+status = copyfile(file,new_dir);
+if ~status
+  disp('Unable to copy .slf stim file to new directory. Do it manually.');
 end
 
 %% READ ORIGINAL DATA, SUBTRACT TTX TRACES, AND WRITE TO NEW FILE ----------
