@@ -86,8 +86,12 @@ CommandPulseDelay = 5; % Delay before commands (i.e. setting current range)
 FirstPulseDelay = 5*20000+100; % Delay before the first pulse
 
             
-if (nargin > 2 && varargin{1} == 'Test')
+if contains(lower(filepath),'test') % if test is in file name
   RecOffOnStim = 0;
+  disp('TEST FILE');
+elseif strcmpi(varargin,'test') % if a test file
+  RecOffOnStim = 0;
+  disp('TEST FILE');
   filepath = [filepath,'_TEST'];
 else
   RecOffOnStim = 1;
@@ -95,6 +99,8 @@ end         % Determine whether channel being stimulated will record
             % data during the length of the pulse.
             % 1 for recording=OFF(use if liquid will be in chamber)
             % 0 for recording=ON (use if chamber will be dry, for testing)
+            
+         
              
 RecOffOnOthers = +1; % Determines whether all of the other channels will 
              % record data while a channel is stimulated. This value
