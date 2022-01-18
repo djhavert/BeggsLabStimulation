@@ -62,8 +62,6 @@ CurrentRange = -4; % see readme for how values here correspond to Amps.
 AmplitudesDAC = 20; % MAX 42. The actual current amplitude of the largest
                     % peak in the pulse is (3*x/128)*CurrentRangeInAmps
                     
-Trains = 20; % Number of times to do the series of tetanic pulses
-
 InterPulseDelay = 20 * 1000 * 5;  % Time between stimulation of one channel 
                              % or pair and the next.
                              % This is NOT the interval between A and B
@@ -71,19 +69,22 @@ InterPulseDelay = 20 * 1000 * 5;  % Time between stimulation of one channel
                              % Note: All times are given in number of
                              % samples. Since the sample rate is 20000 HZ,
                              % one time unit here is equivalent to 50 us.
-% NOTE TO SELF: NEED TO ORGANIZE THESE INPUTS!!!                             
-TetanicInterval = 1%20 * 1000 * (1/20); % Time between tetanic pulses within
-                             % train
+                            
+TetanicInterval = 20 * 1000 * (1/20); % Time between tetanic pulses within
+                             % train (20 Hz in Jimbo et al, 1999)
                              
-TrainingInterval = 50%20 * 20; %Interval between A, B, ... during training.
+TrainingInterval = 20 * 100; %Interval between A, B, ... during training.
+                             % (Tetanization using 10 20Hz pulses takes
+                             % 0.05 s, so the training interval must be
+                             % greater.)
 
 RepsPerCh_tetanize = 10; % How many times the tetanic pulse will be repeated on
                  % each channel PER TRAIN
                  
-RepsPerCh_test = 1%100; % How many times the the stim signal will be repeated
+RepsPerCh_test = 100; % How many times the the stim signal will be repeated
                  % on each channel during testing. (A A A ... B B B ...)
                  
-RepsPerCh_train = 2%100; % How many times the stim signal will be repeated on
+RepsPerCh_train = 100; % How many times the stim signal will be repeated on
                  % two channels during training. (A>B A>B A>B ...)
                  
                  
@@ -277,7 +278,7 @@ end
 for ii = 1:RepsPerCh_train
     for jj = 1:length(Channels)
         for kk = 1:RepsPerCh_tetanize
-            PulseCount = PulseCount + 1
+            PulseCount = PulseCount + 1;
             ES(PulseCount, 1) = PulseTimes(PulseCount-1);
             ES(PulseCount, 2) = RecOffOnOthers * Channels(jj);
             ES(PulseCount, 3) = 1; % real pulse
