@@ -54,7 +54,7 @@ function [pattern_times, PS] = getStimTimes(ES)
     % check if it's a new pattern; if so, add it to patterns(:,1)
     pat_index = false(1,size(pattern_times,1));
     for jj = 1:size(pattern_times,1)
-      pat_index(jj) = isequal(pattern_times{jj}, ch);
+      pat_index(jj) = isequal(pattern_times{jj,1}, ch);
     end
     pat_index = find(pat_index);
     if isempty(pat_index)

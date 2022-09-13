@@ -1,3 +1,6 @@
+function TTX_Subtraction2Int16_func(orig_dir,ttx_dir)
+
+%%
 % NOTE: IN ORDER FOR THIS CODE TO WORK YOU MUST CHANGE YOUR SETTINGS IN
 % MATLAB TO GIVE JAVA MORE HEAP MEMORY. TO DO THIS:
 % CLICK ON PREFERENCES UNDER THE HOME TAB
@@ -5,16 +8,14 @@
 % 2 GB should theoretically work, but I only tested on 4 GB.
 
 % VALUES SET BY USER ------------------------------------------------------
-orig_dir = [pwd, '/04_TrainInterval/'];
-orig_data_dir = [orig_dir, 'data000/'];
-stim_file_dir = orig_dir;
+%orig_dir = [pwd, '/01_ElectrodeScanLong/data000'];
+stim_file_dir = fileparts(orig_dir);
 
-ttx_dir = [pwd, '/06_TTX/'];
-ttx_stimfile_dir = ttx_dir;
-ttx_datafile_dir = [ttx_dir,'data000/'];
+%ttx_dir = [pwd, '/02_TTX/data000'];
+ttx_stimfile_dir = fileparts(ttx_dir);
 
-new_dir = [orig_dir(1:end-1),'_PostTTX/'];
-new_data_dir = [orig_dir(1:end-1),'_PostTTX/data000/'];
+new_dir = [orig_dir,'_PostTTX_16bit'];
+filename = fullfile(new_dir,'data_16bit.bin');
 
 
 % CONSTANTS ---------------------------------------------------------------
@@ -24,29 +25,32 @@ TraceRange = 20*20; % 20 ms
 % Load Vision
 LoadVision2;
 %% GET STIM_FILE PROPERTIES ------------------------------------------------
-stim_file_struct = LoadStimFile(stim_file_dir);
-ESreal = stim_file_struct.ES(stim_file_struct.ES(:,2)>0,:);
-[stim_times,PS] = getStimTimes(stim_file_struct.ES(find(stim_file_struct.ES(:,2)>0),:));
+stim_f = LoadStimFile(stim_file_dir);
+stim = CreateStimStructArray(stim_f.ES_stim,'SequenceDuration',TraceRange);
+PS = GetPatternSeqFromStimStructArray(stim);
+save(fullfile(stim_file_dir,'stim.mat'),'stim');
 
 %% GET TTX TRACES ----------------------------------------------------------
-[ttx_traces,Patterns] = GetTtxTraces(TraceRange, ttx_stimfile_dir, ttx_datafile_dir);
-ttx_traces = cellfun(@(x) int16(x), ttx_traces, 'UniformOutput', false);
+ttx = GetTtxTraces(TraceRange, ttx_stimfile_dir, ttx_dir);
 
 % Find indices of ttx Patterns that correspond to stim patterns in current
 % file
-stim2ttx = zeros(size(stim_times,1),1);
-for ii = 1:length(stim2ttx)
-  for jj = 1:length(Patterns)
-    if isequal(stim_times{ii,1},Patterns{jj,1})
-      stim2ttx(ii) = jj;
+stim2ttx = zeros(length(stim),1);
+for s = 1:length(stim2ttx)
+  for t = 1:length(ttx)
+    if isequal(stim(s).seq,ttx(t).seq)
+      stim2ttx(s) = t;
     end
   end
+end
+if find(stim2ttx == 0)
+  error('Stim Sequence in Data Stim File Does not Have Matching Sequence in TTX Stim File')
 end
 
 %% CREATE JAVA OBJECTS TO ACCESS VISION READ AND WRITE FUNCTIONS -----------
 % ORIGINAL DATA OBJECT
 % Open original data file for reading
-orig_data_obj = LoadVisionFiles(orig_data_dir);
+orig_data_obj = LoadVisionFiles(orig_dir);
 % Extract some useful info
 orig_header = orig_data_obj.getHeader();
 num_samples = orig_header.getNumberOfSamples();
@@ -56,30 +60,15 @@ orig_data = zeros(MaxSamplesPerFile, 513, 'int16');
 
 % NEW DATA OBJECT
 % Create and open new file for writing
-if ~exist(new_data_dir, 'dir')
-  mkdir(new_data_dir);
-end
-% Create the first subfile with header
-new_data_obj = edu.ucsc.neurobiology.vision.io.ModifyRawDataFile(new_data_dir, orig_header);
-% Create the rest of the subfiles. Each subfile is 1.8 GB
-for ff = 1:(num_files-1)
-  new_data_obj.addFile();
-end
-% Transfer stim files to new directory
-filetypes = ['bin'; 'slf'; 'sif';'sef'];
-for ii = 1:
-file = fullfile(stim_file_dir,filesep,dir([stim_file_dir,'*.slf']).name);
-status = copyfile(file,new_dir);
-if ~status
-  disp('Unable to copy .slf stim file to new directory. Do it manually.');
-end
-file = fullfile(stim_file_dir,filesep,dir([stim_file_dir,'*.slf']).name);
-status = copyfile(file,new_dir);
-if ~status
-  disp('Unable to copy .slf stim file to new directory. Do it manually.');
+if ~exist(new_dir, 'dir')
+  mkdir(new_dir);
 end
 
+
+
+
 %% READ ORIGINAL DATA, SUBTRACT TTX TRACES, AND WRITE TO NEW FILE ----------
+fid = fopen(filename,'w');
 index = 1;
 overlap = [];
 tic;
@@ -104,8 +93,10 @@ for ff = 1:num_files
     pat = overlap(end).pattern;
     count = overlap(end).count;
     stim_range = 1:count;
-    new_data(stim_range,2:513) = orig_data(stim_range,2:513) - ttx_traces{pat}(end-count+1:end,:);
-%    LOG(overlap(end).index).indx_end = stim_range(end);
+    new_data(stim_range,2:513) = orig_data(stim_range,2:513) - ttx(pat).trace(end-count+1:end,:);
+    ttx(pat).data_orig{stim_indx} = [ttx(pat).data_orig{stim_indx}; orig_data(stim_range,2:513)];
+    ttx(pat).data_new{stim_indx} = [ttx(pat).data_new{stim_indx}; new_data(stim_range,2:513)];
+    %    LOG(overlap(end).index).indx_end = stim_range(end);
     overlap(end) = [];
   end
   
@@ -116,14 +107,17 @@ for ff = 1:num_files
     stim_range = (stim_time:stim_time+TraceRange-1)-start_sample;
 %    LOG(index).indx_start = stim_range(1);
     pat = PS(index,2);
+    stim_indx = find(stim(pat).times == stim_time);
     pat = stim2ttx(pat);
 %    LOG(index).stim_ch = Patterns{pat};
     %amplitude = ESreal(index,3);
 %    LOG(index).orig_start = orig_data(stim_range(1),2:513);
     % subtract ttx traces from raw data
     if (stim_range(end) <= samples_in_file)
-      new_data(stim_range,2:513) = orig_data(stim_range,2:513) - ttx_traces{pat};
       
+      new_data(stim_range,2:513) = orig_data(stim_range,2:513) - ttx(pat).trace;
+      ttx(pat).data_orig{stim_indx} = orig_data(stim_range,2:513);
+      ttx(pat).data_new{stim_indx} = new_data(stim_range,2:513);
       
 %      LOG(index).indx_end = stim_range(end);
 %      LOG(index).new_start = new_data(stim_range(1),2:513);
@@ -133,17 +127,33 @@ for ff = 1:num_files
       overlap(end).pattern = pat;
       overlap(end).count = stim_range(end)-samples_in_file;
       stim_range = stim_range(1):samples_in_file;
-      new_data(stim_range,2:513) = orig_data(stim_range,2:513) - ttx_traces{pat}(1:length(stim_range),:);
+      new_data(stim_range,2:513) = orig_data(stim_range,2:513) - ttx(pat).trace(1:length(stim_range),:);
+      ttx(pat).data_orig{stim_indx} = orig_data(stim_range,2:513);
+      ttx(pat).data_new{stim_indx} = new_data(stim_range,2:513);
 %      LOG(index).new_start = new_data(stim_range(1),2:513);
       index = index + 1;
     end
   end
   
   % WRITE -----------------------------------------------------------------
-  new_data_obj.appendDataToFile(ff-1,new_data);
+  new_data = transpose(new_data(:,2:512));
+  fwrite(fid,new_data,'int16');
 end
 toc;
 
-new_data_obj.close();
-clear new_data_obj;
-rewrite_data_obj = LoadVisionFiles(new_data_dir);
+orig_data_obj.close();
+fclose(fid);
+
+% Transfer stim files to new directory
+%{
+filetypes = ['bin'; 'slf'; 'sif';'sef'];
+for ii = 1:size(filetypes,1)
+  file = fullfile(stim_file_dir,filesep,dir(fullfile(stim_file_dir,['*.',filetypes(ii,:)])).name);
+  status = copyfile(file,new_dir);
+  if ~status
+    disp(['Unable to copy ',filetypes(ii),' stim file to new directory. Do it manually.']);
+  end
+end
+%}
+
+save(fullfile(new_dir,'ttx_data.mat'),'ttx');

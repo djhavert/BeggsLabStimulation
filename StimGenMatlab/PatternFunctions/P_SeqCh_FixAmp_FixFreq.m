@@ -39,7 +39,7 @@ function [PL, PLI, ES] = P_SeqCh_FixAmp_FixFreq(filepath, varargin)
 %% FILL IN THESE VALUES
 
 %-------User Defined Variables-------%
-Channels = [54, 117, 197, 217, 260, 398, 175, 161, 324, 166, 206, 198, 363, 461, 431, 262, 438, 221];
+Channels = [1:64:512];
           % Each channel will be stimulated sequentailly (in the order 
           % given) with the same time between each stimulation.
 
@@ -51,7 +51,7 @@ CurrentRange = -4; % see readme for how values here correspond to Amps.
 AmplitudesDAC = 20; % MAX 42. The actual current amplitude of the largest
                     % peak in the pulse is (3*x/128)*CurrentRangeInAmps
 
-InterPulseDelay = 20 * 1000 * 4; % Time between stimulation of one channel 
+InterPulseDelay = 20 * 250 * 1; % Time between stimulation of one channel 
                              % and the next.
                              % Note: All times are given in number of
                              % samples. Since the sample rate is 20000 HZ,

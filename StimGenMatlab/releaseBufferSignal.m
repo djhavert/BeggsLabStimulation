@@ -25,7 +25,7 @@ else
     % % % % %7 DIO12-15 Frame0
     % % % % %8 DIO12-15 Frame1
     for i=1:rowRemovedDataFromCurrentBufferSignal
-        removedDataFromCurrentBufferSignal(i,4)=removedDataFromCurrentBufferSignal(i,4)+2236928;%dodanie klucza hold
+        removedDataFromCurrentBufferSignal(i,4)=removedDataFromCurrentBufferSignal(i,4)+2236928;%adding a hold key
         removedDataFromCurrentBufferSignal(i,5)=removedDataFromCurrentBufferSignal(i,5)+2236928;
         %removeDataFromCurrentBuffer(i,5)=removeDataFromCurrentBuffer(i,5)+2236928;
         if (MaskConverted(i,1)==1||MaskConverted(i,3)==1||MaskConverted(i,5)==1||MaskConverted(i,7)==1)
@@ -62,9 +62,11 @@ else
 
              end
          end
-             number=removedDataFromCurrentBufferSignal(i,2); % korekta numeracji macierzy od zera, w³asciwa do labview
+             number=removedDataFromCurrentBufferSignal(i,2); % correction of matrix numbering from zero, suitable for labview
              partCLK=addCLK(clockSignal,number);
-             removedDataFromCurrentBufferSignal(i,4:9)=partCLK+removedDataFromCurrentBufferSignal(i,4:9); %dodanie sygna³ów zegarów
+             removedDataFromCurrentBufferSignal(i,4:9)=partCLK+removedDataFromCurrentBufferSignal(i,4:9); %addition of clock signals
+
+
     end
     
     data=zeros(rowRemovedDataFromCurrentBufferSignal,7);

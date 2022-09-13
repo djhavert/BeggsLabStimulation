@@ -1,27 +1,30 @@
-function [ttx_traces,Patterns] = GetTtxTraces(TraceRange, ttx_stimfile_dir, ttx_datafile_dir)
+function [ttx] = GetTtxTraces(TraceRange, ttx_stimfile_dir, ttx_datafile_dir)
 
 % CONSTANTS
 MaxSamplesPerFile = 20000*60*2; %2 min
 
 
 % Get Stim File Information
-stim_file_struct = LoadStimFile(ttx_stimfile_dir);
-PL = stim_file_struct.PL;
-PLI = stim_file_struct.PLI;
-ES = stim_file_struct.ES;
+stim_f = LoadStimFile(ttx_stimfile_dir);
+stim_start_idx = find(stim_f.ES(:,2)>0,1,'first');
+stim_end_idx = find(stim_f.ES(:,2)>0,1,'last');
 
 % MANUAL FIX FOR BUG THAT CAUSED EVERYTHING TO SHIFT BY 250 MS
-diffs_by_250 = find(diff(ES)==5000);
-bad_shifts = find(diffs_by_250>20 & diffs_by_250<size(ES,1)-18);
-if ~isempty(bad_shifts)
-  error(['TTX Got Shifted at ',num2str(bad_shifts), '. Needs manual correction.'])
+bad_shifts = find(diff(stim_f.ES(stim_start_idx:stim_end_idx))==5000);
+bad_shift_idx = stim_start_idx + bad_shifts + 1;
+for ii = bad_shift_idx
+  t = stim_f.ES(ii,1);
+  disp(['TTX Got Shifted at t = ',num2str(t/20000), ' s. Shifting back.'])
+  stim_f.ES(t:end,1) = stim_f.ES(t:end,1) - 5000;
 end
 %ES(921:end,1) = ES(921:end,1) - 5000;
 
 % Find uninterupted zeros
-EsZerosUninterupted = GetUninteruptedZeros(ES);
-ESreal = ES(find(ES(:,2)>0),:);
-[stim_times, PS] = getStimTimes(ESreal);
+EsZerosUninterupted = GetUninteruptedZeros(stim_f.ES);
+stim_f.ES_stim = stim_f.ES(stim_f.ES(:,2)>0,:);
+%[stim_times, PS] = getStimTimes(ESreal);
+stim = CreateStimStructArray(stim_f.ES_stim,'SequenceDuration',TraceRange);
+PS = GetPatternSeqFromStimStructArray(stim);
 
 
 % TTX DATA OBJECT
@@ -51,9 +54,11 @@ clear ttx_data;
 
 % Initialize
 ttx_data = zeros(MaxSamplesPerFile, 513, 'int16');
-ttx_traces = cell(size(stim_times,1),1);
-for pat = 1:size(stim_times,1)
-  ttx_traces{pat}=zeros(TraceRange,512);
+%ttx_traces = cell(size(stim_times,1),1);
+ttx = stim;
+for s = 1:length(ttx)
+  %ttx_traces{s}=zeros(TraceRange,512);
+  ttx(s).trace = zeros(TraceRange,512);
 end
 index = 1;
 overlap = [];
@@ -72,7 +77,7 @@ for ff = 1:num_files
   if ~isempty(overlap)
     overlap = double(ttx_data(1:size(overlap,1), 2:513));
     trace = [trace; overlap];
-    ttx_traces{pat} = ttx_traces{pat} + trace;
+    ttx(s).trace = ttx(s).trace + trace;
     index = index+1;
     overlap = [];
   end
@@ -80,13 +85,14 @@ for ff = 1:num_files
   while (index <= size(PS,1) && PS(index,1) <= end_sample)
     stim_time = PS(index,1);
     stim_range = stim_time:stim_time+TraceRange-1;
-    pat = PS(index,2);
+    s = PS(index,2);
     %amplitude = ESreal(index,3);
     
     % Save Traces
     if (stim_range(end) <= end_sample)
       trace = double(ttx_data(stim_range-start_sample, 2:513));
-      ttx_traces{pat} = ttx_traces{pat} + trace; %just add together
+      %ttx_traces{s} = ttx_traces{s} + trace; %just add together
+      ttx(s).trace = ttx(s).trace + trace;
       index = index+1;
     else % deal with potential overlap with next file
       trace = double(ttx_data((stim_time:end_sample)-start_sample, 2:513));
@@ -99,13 +105,18 @@ end
 
 
 
-for pat = 1:size(stim_times,1) %finish average by dividing trace by number of stims
-  ttx_traces{pat} = (ttx_traces{pat}./length(stim_times{pat,2}))-Background;
+%for s = 1:size(stim_times,1) %finish average by dividing trace by number of stims
+%  ttx_traces{s} = (ttx_traces{s}./length(stim_times{s,2}))-Background;
+%end
+for s = 1:length(stim) %finish average by dividing trace by number of stims
+  ttx(s).trace = int16((ttx(s).trace./length(stim(s).times))-Background);
 end
 
-Patterns = cell(size(stim_times,1),1);
-for pat = 1:size(stim_times,1)
-  Patterns{pat} = stim_times{pat,1};
-end
+%Patterns = cell(size(stim_times,1),1);
+%for s = 1:size(stim_times,1)
+%  Patterns{s} = stim_times{s,1};
+%end
+
+
 
 ttx_data_obj.close();
