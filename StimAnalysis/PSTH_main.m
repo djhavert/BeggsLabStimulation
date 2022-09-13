@@ -1,7 +1,5 @@
 
 
-
-
 % USER INPUT - directory info
 %dir = [pwd, '/02_Stim_ThreePairsAmp10_PostTTX/'];
 dir = [pwd];

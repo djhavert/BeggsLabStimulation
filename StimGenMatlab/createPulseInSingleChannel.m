@@ -75,7 +75,7 @@ for i=1:lenPartPulseInSingleChannel/6
 %             elseif [partLibrary(4,(i-1)*6+1),partLibrary(4,i*6+1)]==[1, 0]
 %                  maskPart(i,:)=[1 0];
 
-%wazne trzeba to poprawic,bojest cos dziwnego ze wzgledu na ostatni
+%important, it needs to be corrected, because there is something strange about the last one
             end
         else
             maskPart(i,:)=[0, 1]; 
@@ -89,7 +89,7 @@ end
 mask=zeros(lenPartPulseInSingleChannel/6,8);
 
 
-         if mod(chipNumber,2)~=1 %parzyste
+         if mod(chipNumber,2)~=1 %even
             mask(:,chipNumber-1:chipNumber)=maskPart(:,:);
          else
             mask(:,chipNumber:chipNumber+1)=maskPart(:,:);

@@ -1,4 +1,4 @@
-function stim = CreateStimStruct(ES,varargin)
+function stim = CreateStimStructArray(ES,varargin)
 
 MAX_SEQUENCE_DURATION = 5000; % (5,000 = 250 ms)
 b_time_in_ms = false; % by default function will return time in multiples 
@@ -24,9 +24,8 @@ if b_is_poisson
   MAX_SEQUENCE_DURATION = 200; % (200 = 10 ms)
 end
 
-% Intitialize Return variables.
-stim.sequence = cell(0);
-stim.sequence_times = cell(0);
+% Intitialize Return variable.
+stim = struct('seq',{},'times',{});
 
 % Start Loop
 ii = 1; % Which pulse we are currently looped onto
@@ -35,16 +34,17 @@ while ii <= size(ES,1)
   % Find current sequence
   times = [];
   jj = 1; % how many pulses in a sequence
-  current_sequence = [];
+  current_seq = struct('timing',[],'chs',[]);
   while ES(ii+jj-1,2) > 0
     times(jj) = ES(ii+jj-1,1); 
-    current_sequence(jj,:) = [times(jj)-times(1),ES(ii+jj-1,2)];
+    current_seq.timing = [current_seq.timing, times(jj)-times(1)];
+    current_seq.chs = [current_seq.chs, ES(ii+jj-1,2)];
     
     if ii + jj > size(ES,1)
       break
     end
     time_next = ES(ii+jj,1);
-    if time_next - times(jj) > MAX_SEQUENCE_DURATION
+    if time_next - times(jj) >= MAX_SEQUENCE_DURATION
       break
     else
       jj = jj + 1;
@@ -55,28 +55,29 @@ while ii <= size(ES,1)
   
   % Add any new sequnces to sequnces list
   seq_index = [];
-  for s = 1:size(stim.sequence,1)
-    seq_index(s) = isequal(current_sequence, stim.sequence{s});
+  for s = 1:length(stim)
+    seq_index(s) = isequal(current_seq, [stim(s).seq]);
   end
   seq_index = find(seq_index);
   if isempty(seq_index) % then it's new, so add it to sequences
-    stim.sequence{size(stim.sequence,1)+1,1} = current_sequence;
-    seq_index = size(stim.sequence,1);
-    stim.sequence_times{seq_index,1} = [];
+    seq_index = length(stim) + 1;
+    stim(seq_index).seq.timing = current_seq.timing;
+    stim(seq_index).seq.chs = current_seq.chs;
+    stim(seq_index).times = [];
   elseif length(seq_index)>1
     error('ERROR in getStimTimes.m, duplicate sequence in stim.sequence!');
   end
   
   % Add start time of sequence to list of times
-  stim.sequence_times{seq_index,1} = [stim.sequence_times{seq_index,1}, times(1)];
+  stim(seq_index).times = [stim(seq_index).times, times(1)];
   
   
 end
 
 if b_time_in_ms
-  for n = 1:size(stim.sequence,1)
-    stim.sequence{n}(:,1) = stim.sequence{n}(:,1)/20;
-    stim.sequence_times{n} = stim.sequence_times{n}./20;
+  for n = 1:length(stim)
+    stim(n).timing = stim(n).timing/20;
+    stim(n).times = stim(n).times/20;
   end
 end
 

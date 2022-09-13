@@ -7,6 +7,7 @@
 
 
 tic
+LoadVision2
 
 % function ElectrodeScan(dir)
 stim_dir = fullfile(pwd);
@@ -24,7 +25,7 @@ spike_times = SpikeDetect512(data_dir);
 
 
 %% Count Post Stimulus Spikes
-short_range = 20*5;
+short_range = 20*10;
 long_range = 20*200;
 short_count = zeros(num_pats,512);
 long_count = zeros(num_pats,512);
@@ -42,15 +43,12 @@ for pat = 1:num_pats
   stim_times = pat_t{pat,2};
   % for each channel...
   for ch = 1:512
-<<<<<<< Updated upstream
       if isempty(spike_times{ch})
           continue
       end
-=======
     if isempty(spike_times{ch})
       continue
     end
->>>>>>> Stashed changes
   % Count spikes before short_range value
   short_count(pat,ch) = sum(isInRange(spike_times{ch}',stim_times,stim_times+short_range))./length(stim_times);
   short_fr(pat,ch) = short_count(pat,ch)./(short_range/20000);
@@ -58,7 +56,7 @@ for pat = 1:num_pats
   % Count spikes between short_range and long_range values
   long_count(pat,ch) = sum(isInRange(spike_times{ch}',stim_times+short_range,stim_times+long_range))./length(stim_times);
   long_fr(pat,ch) = long_count(pat,ch)./(long_range/20000);
- % long_fr_change(pat,ch) = (long_fr(pat,ch)-fr_no_stim(ch))./(ch);
+  long_fr_change(pat,ch) = (long_fr(pat,ch)-fr_no_stim(ch))./fr_no_stim(ch);
   end
   
   % Sort by number
