@@ -48,7 +48,9 @@ num_files = ceil(num_samples/MAX_SAMPLES_PER_FILE);
 data = zeros(MAX_SAMPLES_PER_FILE, 513, 'int16');
 
 % Determine Threshold
-data = data_obj.getData(20150, 79950);
+start_sample = 20150;
+end_sample = 79950;
+data = data_obj.getData(start_sample, end_sample);
 avg = mean(data(:,2:513),1);
 sigma = std(double(data(:,2:513)),1);
 threshold = transpose(avg - threshold_alpha * sigma);
@@ -76,12 +78,13 @@ for ff = 1:num_files
   % SPIKE DETECT-----------------------------------------------------------
   for ch_read = 1:512
     spikes = transpose(spikeDetect(data(:,ch_read+1),threshold(ch_read)));
-    spike_times{ch_read} = [spike_times{ch_read},spikes];
-    % Spike times will be in units of 50 us each (i.e. 1 ms = 20)
+    spike_times{ch_read} = [spike_times{ch_read},spikes/20];
+    % Spike times will be in ms.
   end
   
 end
 data_obj.close();
 clear data data_obj
 
-spike_times{513} = num_samples;
+spike_times{513} = 1;
+spike_times{513} = [512, num_samples/20];
