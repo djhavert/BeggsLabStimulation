@@ -76,7 +76,7 @@ end
 
 if b_time_in_ms
   for n = 1:length(stim)
-    stim(n).timing = stim(n).timing/20;
+    stim(n).seq.timing = stim(n).seq.timing/20;
     stim(n).times = stim(n).times/20;
   end
 end
