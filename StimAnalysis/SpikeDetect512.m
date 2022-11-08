@@ -87,4 +87,4 @@ data_obj.close();
 clear data data_obj
 
 spike_times{513} = 1;
-spike_times{513} = [512, num_samples/20];
+spike_times{514} = [512, num_samples/20];
